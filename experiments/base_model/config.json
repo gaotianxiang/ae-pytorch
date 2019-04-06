@@ -1,0 +1,8 @@
+{
+  "lr": 1e-3,
+  "num_epochs": 100,
+  "log_every": 100,
+  "batch_size": 64,
+  "num_workers": 8,
+  "hidden_size": 256
+}
