@@ -6,6 +6,7 @@ import os
 parser = argparse.ArgumentParser()
 parser.add_argument('--gpu', default='0', type=str)
 parser.add_argument('--model_dir', default='./experiments/base_model', type=str)
+parser.add_argument('--resume', action='store_true')
 args = parser.parse_args()
 
 
@@ -16,6 +17,8 @@ def main():
     args.__dict__.update(hps.dict)
     director = Director(batch_size=args.batch_size, gpu=args.gpu, num_workers=args.num_workers,
                         hidden_size=args.hidden_size, model_dir=args.model_dir)
+    if args.resume:
+        director.load_ckpts()
     director.train(epochs=args.num_epochs, lr=args.lr, log_every=args.log_every)
 
 

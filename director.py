@@ -20,6 +20,7 @@ class Director:
         self.ckpts_path = os.path.join(model_dir, 'ckpts')
         self.recon_path = os.path.join(model_dir, 'reconstructions')
         self.current_best_test_loss = 1e5
+        self.start_epoch = 0
         os.makedirs(self.ckpts_path, exist_ok=True)
         os.makedirs(self.recon_path, exist_ok=True)
 
@@ -27,7 +28,7 @@ class Director:
         ravg = RunningAverage()
         optimizer = optim.Adam(self.net.parameters(), lr=lr)
         self.net.train()
-        for epoch in trange(epochs, desc='epochs'):
+        for epoch in trange(self.start_epoch, self.start_epoch + epochs, desc='epochs'):
             ravg.reset()
             ite = 0
             with tqdm(total=len(self.dl_train())) as progress_bar:
@@ -46,7 +47,7 @@ class Director:
                     progress_bar.set_postfix(loss_avg=ravg())
                     progress_bar.update()
             test_loss = self.evaluate()
-            self.store_chkpts(test_loss, epoch)
+            self.store_ckpts(test_loss, epoch)
             self.visualize(epoch)
 
     def evaluate(self):
@@ -76,7 +77,7 @@ class Director:
         torchvision.utils.save_image(grid, filename=os.path.join(self.recon_path,
                                                                  'cifar10_reconstruction_epoch_{}.png'.format(epoch)))
 
-    def store_chkpts(self, loss, epoch):
+    def store_ckpts(self, loss, epoch):
         if loss > self.current_best_test_loss:
             return
         self.current_best_test_loss = loss
@@ -87,3 +88,12 @@ class Director:
         }
         torch.save(state_dict, os.path.join(self.ckpts_path, 'best.pth.tar'))
         tqdm.write('new best loss is found and ckpt is saved')
+
+    def load_ckpts(self):
+        ckpts_path = os.path.join(self.ckpts_path, 'best.pth.tar')
+        assert os.path.exists(ckpts_path), 'there is no ckpt file in {}'.format(self.ckpts_path)
+        state_dict = torch.load(ckpts_path)
+        self.net.load_state_dict(state_dict['net'])
+        self.start_epoch = state_dict['epoch'] + 1
+        print('ckpt after {} epochs is loaded, the test loss is {:.4f}'.format(state_dict['epoch'],
+                                                                               state_dict['test_loss']))
