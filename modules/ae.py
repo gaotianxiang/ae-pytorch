@@ -47,21 +47,22 @@ class Decoder(nn.Module):
         self.conv2_2 = nn.Conv2d(in_channels=32, out_channels=16, kernel_size=3, padding=1)
         self.conv1_1 = nn.Conv2d(in_channels=16, out_channels=16, kernel_size=3, padding=1)
         self.conv1_2 = nn.Conv2d(in_channels=16, out_channels=3, kernel_size=3, padding=1)
+        self.upsampel = nn.UpsamplingBilinear2d(scale_factor=2)
 
     def forward(self, imgs):
         x = imgs
         x = self.fcn(x)
-        x = x.view(x.size(0), 4, 4, 64)
+        x = x.view(x.size(0), 64, 4, 4)
 
-        x = F.upsample_bilinear(x, scale_factor=2)
+        x = self.upsampel(x)
         x = self.conv3_1(x)
         x = self.conv3_2(x)
 
-        x = F.upsample_bilinear(x, scale_factor=2)
+        x = self.upsampel(x)
         x = self.conv2_1(x)
         x = self.conv2_2(x)
 
-        x = F.upsample_bilinear(x, scale_factor=2)
+        x = self.upsampel(x)
         x = self.conv1_1(x)
         x = self.conv1_2(x)
 

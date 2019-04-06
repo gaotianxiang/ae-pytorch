@@ -22,7 +22,7 @@ class CIFAR10DL:
         else:
             transform = transforms.ToTensor()
         cifar10_dtst = CIFAR10(root='data', download=True, train=self.train_set, transform=transform)
-        cifar10_dl = data.DataLoader(cifar10_dtst, batch_size=self.batch_size, shuffle=self.train_set,
+        cifar10_dl = data.DataLoader(cifar10_dtst, batch_size=self.batch_size, shuffle=True,
                                      num_workers=self.num_workers)
         return cifar10_dl
 
