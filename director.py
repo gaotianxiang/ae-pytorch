@@ -65,7 +65,7 @@ class Director:
         tqdm.write('test reconstruction loss {:.4f}'.format(ravg()))
         return ravg()
 
-    def visualize(self, epoch):
+    def visualize(self, epoch, *args):
         self.net.eval()
         for imgs, _ in self.dl_test():
             break
@@ -74,8 +74,10 @@ class Director:
             recon = self.net(imgs)
         whole = torch.cat((imgs, recon), dim=0)
         grid = torchvision.utils.make_grid(whole, nrow=16, padding=2, pad_value=255)
-        torchvision.utils.save_image(grid, filename=os.path.join(self.recon_path,
-                                                                 'cifar10_reconstruction_epoch_{}.png'.format(epoch)))
+        filename = 'cifar10_reconstruction_epoch_{}.png'.format(epoch)
+        if len(args) != 0:
+            filename = 'cifar10_reconstruction_epoch_{}_{}.png'.format(epoch, '_'.join(args))
+        torchvision.utils.save_image(grid, filename=os.path.join(self.recon_path, filename))
 
     def store_ckpts(self, loss, epoch):
         if loss > self.current_best_test_loss:
@@ -97,3 +99,4 @@ class Director:
         self.start_epoch = state_dict['epoch'] + 1
         print('ckpt after {} epochs is loaded, the test loss is {:.4f}'.format(state_dict['epoch'],
                                                                                state_dict['test_loss']))
+        return state_dict['epoch'], state_dict['test_loss']
